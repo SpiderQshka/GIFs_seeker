@@ -101,4 +101,4 @@ task('watchAll', parallel('watchHTML', 'watchStyles', 'watchScripts', 'watchImag
 
 task('build', series('destHTML', 'destStyles', 'destScripts', "destImages", 'destFonts', 'destOther'));
 
-task('default', parallel('webserver', 'watchAll'));
+task('default', parallel('webserver', 'watchAll', 'build'));
