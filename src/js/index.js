@@ -58,7 +58,7 @@ function handler(data){
 	for(let i = 0; i < gifNumber.value; i++){
 		let img = document.createElement('img');
 		img.src = response.data[i].images.fixed_height.url;
-		img.className = 'col col-sm-6 col-md-4 col-lg-4 col-xl-3 p-4 border bg-light';
+		img.className = 'p-4';
 		output.appendChild(img);
 	}
 	
