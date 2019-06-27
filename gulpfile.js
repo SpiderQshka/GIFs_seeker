@@ -7,37 +7,42 @@ const {src, dest, watch, series, task, parallel} = require('gulp'),
 var path = {
 	src: {
 		html: 'src/html/**/*.html',
+		style: 'src/styles/index.scss',
+		js: 'src/js/**/*.js',
+		image: 'src/img/**/*.*',
+		fonts: 'src/fonts/*.*'
+	},
+	dist: {
+		html: 'dist/html/',
+		style: 'dist/styles/',
+		js: 'dist/js/',
+		image: 'dist/img/',
+		fonts: 'dist/fonts/'
+	},
+	watch: {
+		html: 'src/html/**/*.html',
 		style: 'src/styles/**/*.scss',
 		js: 'src/js/**/*.js',
 		image: 'src/img/**/*.*',
-		fonts: 'src/fonts/*.*',
-		other: 'src/other/**/*.*'
-	},
-	dest: {
-		html: 'dest/html/',
-		style: 'dest/styles/',
-		js: 'dest/js/',
-		image: 'dest/img/',
-		fonts: 'dest/fonts/',
-		other: 'dest/other/'
+		fonts: 'src/fonts/*.*'
 	}
 };
 
 task('webserver', function(){
 	browserSync.init({
-	    server: {
-	        baseDir: "./",
-	       	index: './dest/html/index.html'
-	    },
-	    tunnel: true,
-	    host: 'localhost',
-	    port: 3000
+		server: {
+		baseDir: "./dist",
+			index: './html/index.html'
+		},
+		tunnel: true,
+		host: 'localhost',
+		port: 3000
 	});
 })
 
 task('destHTML', function(){
 	return src(path.src.html)
-		.pipe(dest(path.dest.html))
+		.pipe(dest(path.dist.html))
 		.pipe(browserSync.stream());
 });
 
@@ -45,60 +50,50 @@ task('destStyles', function(){
 	return src(path.src.style)
 		.pipe(sass())
 		.pipe(prefixer())
-		.pipe(dest(path.dest.style))
+		.pipe(dest(path.dist.style))
 		.pipe(browserSync.stream());
 });
 
 task('destScripts', function(){
 	return src(path.src.js)
-		.pipe(dest(path.dest.js))
+		.pipe(dest(path.dist.js))
 		.pipe(browserSync.stream());
 });
 
 task('destImages', function(){
 	return src(path.src.image)
-		.pipe(dest(path.dest.image))
+		.pipe(dest(path.dist.image))
 		.pipe(browserSync.stream());
 });
 
 task('destFonts', function(){
 	return src(path.src.fonts)
-		.pipe(dest(path.dest.fonts))
-		.pipe(browserSync.stream());
-});
-
-task('destOther', function(){
-	return src(path.src.other)
-		.pipe(dest(path.dest.other))
+		.pipe(dest(path.dist.fonts))
 		.pipe(browserSync.stream());
 });
 
 task('watchHTML', function(){
-	watch(path.src.html, series('destHTML'));
+	watch(path.watch.html, series('destHTML'));
 });
 
 task('watchStyles', function(){
-	watch(path.src.style, series('destStyles'));
+	watch(path.watch.style, series('destStyles'));
 });
 
 task('watchScripts', function(){
-	watch(path.src.js, series('destScripts'));
+	watch(path.watch.js, series('destScripts'));
 });
 
 task('watchImages', function(){
-	watch(path.src.image, series('destImages'));
+	watch(path.watch.image, series('destImages'));
 });
 
 task('watchFonts', function(){
-	watch(path.src.fonts, series('destFonts'));
+	watch(path.watch.fonts, series('destFonts'));
 });
 
-task('watchOther', function(){
-	watch(path.src.other, series('destOther'));
-});
+task('watch', parallel('watchHTML', 'watchStyles', 'watchScripts', 'watchImages', 'watchFonts'));
 
-task('watchAll', parallel('watchHTML', 'watchStyles', 'watchScripts', 'watchImages', 'watchFonts', 'watchOther'));
+task('build', series('destHTML', 'destStyles', 'destScripts', 'destImages', 'destFonts'))
 
-task('build', series('destHTML', 'destStyles', 'destScripts', "destImages", 'destFonts', 'destOther'));
-
-task('default', parallel('webserver', 'watchAll', 'build'));
+task('default', series('build', 'webserver', 'watch'));
